@@ -1,0 +1,24 @@
+- hosts: localhost
+  gather_facts: false
+  roles:
+    - { role: roles/ec2 ,vars: {node: "namenode", count: 1, vol_size: 1}}
+    - { role: roles/ec2 ,vars: {node: "datanode", count: 1, vol_size: 1}}
+
+  tasks:
+    - name: Waiting for the port 22 to become open 
+      local_action: wait_for
+                    host={{ item }}
+                    state=started
+                    port=22
+      with_items:
+        - "{{ groups['tag_Cluster_hdfs'] }}"
+
+- hosts: tag_Hadoop_namenode
+  gather_facts: false
+  roles:
+    - roles/config_master
+
+- hosts: tag_Hadoop_datanode
+  gather_facts: false
+  roles:
+    - roles/config_slave

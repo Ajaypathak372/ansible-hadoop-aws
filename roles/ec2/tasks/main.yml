@@ -1,0 +1,23 @@
+---
+
+- name: Launch EC2 Instances for Hadoop Cluster
+  ec2: 
+    region: "{{ region }}"
+    image: "{{ ami_id }}"
+    instance_type: "{{ instance_type }}"
+    count: "{{ count }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    group_id: "{{ sg_id }}"
+    key_name: "{{ key }}"
+    wait: yes
+    state: present
+    instance_tags:
+      Hadoop: "{{ node }}"
+      Cluster: "hdfs"
+    volumes:
+      - device_name: /dev/sdf
+        volume_type: gp2
+        volume_size: "{{ vol_size }}"
+
+- name: Refresh inventory to ensure new instaces exist in inventory
+  meta: refresh_inventory

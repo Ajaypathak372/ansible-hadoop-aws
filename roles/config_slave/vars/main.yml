@@ -1,0 +1,5 @@
+master_ip: "{{ item }}"
+val: "data"
+hdfs_dir: "/slave_hdfs"
+hadoop_dir: "/etc/hadoop"
+hdfs_port: 9001

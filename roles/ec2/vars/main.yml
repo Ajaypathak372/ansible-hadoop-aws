@@ -1,0 +1,8 @@
+---
+
+region: "ap-south-1"
+ami_id: "ami-0a9d27a9f4f5c0efc"
+instance_type: "t2.micro"
+subnet_id: "subnet-2e8ee562"
+sg_id: "sg-007e984dff1d14721"
+key: "taskoskey"

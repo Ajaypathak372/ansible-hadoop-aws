@@ -1,0 +1,67 @@
+---
+
+- name: Checking Hadoop installed or not
+  yum:
+    list: hadoop
+  register: hadoop
+
+- name: checking jdk is installed or not
+  yum:
+    list: jdk
+  register: jdk
+
+- name: Installing Hadoop
+  command:
+    cmd: rpm -ivh https://archive.apache.org/dist/hadoop/core/hadoop-1.2.1/hadoop-1.2.1-1.x86_64.rpm --force
+  when: hadoop.results | length == 0 
+
+- name: Installing Java (jdk)
+  yum:
+    name: https://mytest-372.s3.ap-south-1.amazonaws.com/jdk-8u171-linux-x64.rpm
+    state: present
+    disable_gpg_check: yes
+  when: jdk.results | length == 0
+
+- name: Configuring core-site.xml file
+  template:
+    src: templates/core-site.xml
+    dest: "{{hadoop_dir}}/core-site.xml"
+
+- name: Configuring hdfs-site.xml file
+  template:
+    src: templates/hdfs-site.xml
+    dest: "{{hadoop_dir}}/hdfs-site.xml"
+
+- name: Formatting NamNode
+  command: "hadoop namenode -format -nonInteractive"
+  ignore_errors: yes
+  register: format_master
+
+      #    - debug:
+      # msg: "{{ format_master }}"
+
+- name: Starting Hadoop NameNode services
+  command: "hadoop-daemon.sh start namenode"
+  ignore_errors: yes
+  register: start
+
+      # - debug:
+      # msg: "{{ start }}"
+
+- name: Create a new ext4 primary partition for EBS Volume
+  community.general.parted:
+    device: /dev/xvdf
+    number: 1
+    state: present
+    fs_type: ext4
+
+- name: Create a ext4 filesystem on EBS Volume
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/xvdf1
+
+- mount:
+    fstype: ext4
+    src: /dev/xvdf1
+    path: "{{ hdfs_dir }}"
+    state: mounted
